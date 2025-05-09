@@ -108,9 +108,9 @@ getsha() {
     if [ -f kali-nethunter-rootfs-${chroot}-${SETARCH}.tar.xz.sha512sum ]; then
         rm kali-nethunter-rootfs-${chroot}-${SETARCH}.tar.xz.sha512sum
     fi
-	axel ${EXTRAARGS} 
-             --alternate "${URL}.sha512sum" \\
-             -o $rootfs.sha512sum
+	axel ${EXTRAARGS} \
+             --alternate "${URL}.sha512sum" \
+             -o $rootfs.sha512sum || echo "Failed to download file signature"
 }
 
 # Utility function to check integrity
@@ -118,13 +118,15 @@ checkintegrity() {
 	printf "\n${blue} [*] Checking integrity of file..."
 	prinf "\n [*] The script will immediately terminate in case of integrity failure"
 	printf "${reset}\n"
-	sha512sum -c $rootfs.sha512sum || \\
-        {
-		printf "${red} Sorry :( to say your downloaded linux file was corrupted"
-                printf "\n or half downloaded, but don'''t worry, just rerun my script"
-                printf "${reset}\n"
-		exit 1
-	}
+ 	if [ -f $rootfs.sha512sum ]; then
+		sha512sum -c $rootfs.sha512sum || \
+	        {
+			printf "${red} Sorry :( to say your downloaded linux file was corrupted"
+	                printf "\n or half downloaded, but don'''t worry, just rerun my script"
+	                printf "${reset}\n"
+			exit 1
+		}
+  	fi
 }
 
 # Utility function to extract tar file
@@ -132,9 +134,15 @@ extract() {
 	printf "\n${blue} [*] Extracting ${rootfs}"
         printf "\n into ${DESTINATION}"
         printf "${reset}\n"
-	proot --link2symlink \\
-              tar -xf $rootfs \\
+	proot --link2symlink \
+              tar -xf $rootfs \
               -C $HOME 2> /dev/null || :
+
+        # fallback to most recent package structure
+	KALI=`basename ${DESTINATION}`
+	if [ -f "${HOME}/${KALI}/etc/environment" ]; then
+		ln -s "${HOME}/${KALI}" "${HOME}/chroot/${KALI}"
+  	fi
 }
 
 # Utility function for login file
