@@ -208,7 +208,7 @@ cmd="proot \\
     ${PREFIX}/bin/env -i \\
     HOME=${home} TERM=${TERM} \\
     LANG=${LANG} \\
-    PATH=${DESTINATION}/bin:${home}/bin:${DESTINATION}/sbin:${home}/sbin:${DESTINATION}\etc:${home}/bin \\
+    PATH=${DESTINATION}/bin:${home}/bin:${DESTINATION}/sbin:${home}/sbin:${DESTINATION}/etc:${home}/bin \\
     ${LOGIN}"
 
 args="${@}"
