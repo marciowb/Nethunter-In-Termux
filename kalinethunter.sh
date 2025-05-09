@@ -213,9 +213,9 @@ cmd="proot \
 
 args="${@}"
 if [ "${#}" == 0 ]; then
-    exec $cmd
+    exec \$cmd
 else
-    $cmd -c "${args}"
+    \$cmd -c "\${args}"
 fi
 EOM
 	chmod 700 $bin
