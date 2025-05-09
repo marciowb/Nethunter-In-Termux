@@ -185,12 +185,10 @@ checksysinfo() {
 if [ ! -f $DESTINATION/root/.version ]; then
     touch $DESTINATION/root/.version
 fi
-user=kali
-home=$DESTINATION/home/$user
-LOGIN="sudo -u \$user /bin/bash"
+home=$DESTINATION/home/kali
+LOGIN="sudo -u kali /bin/bash"
 if [[ ("\$#" != "0" && ("\$1" == "-r")) ]]; then
-    user=root
-    home=$DESTINATION/$user
+    home=$DESTINATION/root
     LOGIN="/bin/bash --login"
     shift
 fi
@@ -204,11 +202,12 @@ cmd="proot \
     -b ${DESTINATION}/dev:/dev/shm \
     -b /sdcard \
     -b ${HOME} \
-    -w ${home} \
+    -w \${home} \
     ${PREFIX}/bin/env -i \
-    HOME=${home} TERM=${TERM} \
+    HOME=\${home} \
+    TERM=${TERM} \
     LANG=${LANG} \
-    PATH=${DESTINATION}/bin:${home}/bin:${DESTINATION}/sbin:${home}/sbin:${DESTINATION}/etc:${home}/bin \
+    PATH=${DESTINATION}/bin:\${home}/bin:${DESTINATION}/sbin:\${home}/sbin:${DESTINATION}/etc:\${home}/bin \
     \${LOGIN}"
 
 args="${@}"
