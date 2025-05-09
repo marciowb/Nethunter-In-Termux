@@ -203,7 +203,7 @@ cmd="proot \
     -b /sdcard \
     -b ${HOME} \
     -w \${home} \
-    ${PREFIX}/bin/env -i \
+    /bin/env -i \
     HOME=\${home} \
     TERM=${TERM} \
     LANG=${LANG} \
