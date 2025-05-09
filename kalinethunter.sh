@@ -150,7 +150,7 @@ createloginfile() {
 	bin=$PREFIX/bin/startkali.sh
         printf "\n${blue} [*] Creating ${bin}"
         printf "${reset}\n"
-	cat > $bin <<- EOM
+cat <<EOM > $bin
 #!/data/data/com.termux/files/usr/bin/bash -e
 unset LD_PRELOAD
 
@@ -195,21 +195,21 @@ if [[ ("\$#" != "0" && ("\$1" == "-r")) ]]; then
     shift
 fi
 
-cmd="proot \\
-    --link2symlink \\
-    -0 \\
-    -r ${DESTINATION} \\
-    -b /dev \\
-    -b /proc \\
-    -b ${DESTINATION}/dev:/dev/shm \\
-    -b /sdcard \\
-    -b ${HOME} \\
-    -w ${home} \\
-    ${PREFIX}/bin/env -i \\
-    HOME=${home} TERM=${TERM} \\
-    LANG=${LANG} \\
-    PATH=${DESTINATION}/bin:${home}/bin:${DESTINATION}/sbin:${home}/sbin:${DESTINATION}/etc:${home}/bin \\
-    ${LOGIN}"
+cmd="proot \
+    --link2symlink \
+    -0 \
+    -r ${DESTINATION} \
+    -b /dev \
+    -b /proc \
+    -b ${DESTINATION}/dev:/dev/shm \
+    -b /sdcard \
+    -b ${HOME} \
+    -w ${home} \
+    ${PREFIX}/bin/env -i \
+    HOME=${home} TERM=${TERM} \
+    LANG=${LANG} \
+    PATH=${DESTINATION}/bin:${home}/bin:${DESTINATION}/sbin:${home}/sbin:${DESTINATION}/etc:${home}/bin \
+    \${LOGIN}"
 
 args="${@}"
 if [ "${#}" == 0 ]; then
