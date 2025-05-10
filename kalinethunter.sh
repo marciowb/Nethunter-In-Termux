@@ -265,7 +265,7 @@ fix_package_updates
 # Utility function for resolv.conf
 resolvconf() {
 	#create resolv.conf file 
-	printf "\nnameserver 8.8.8.8\nnameserver 8.8.4.4" > $DESTINATION/etc/resolv.conf
+	printf "\nnameserver 8.8.8.8\nnameserver 1.1.1.1" > $DESTINATION/etc/resolv.conf
 } 
 resolvconf
 
