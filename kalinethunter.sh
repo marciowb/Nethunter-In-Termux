@@ -3,7 +3,7 @@
 #
 # https://hax4us.com
 ################################################################################
-# Updated By: marciowb
+# Updated By: Marcio Wesley Borges https://marciowb.dev
 # Modified Date: 2025-05-09
 ################################################################################
 set +e
@@ -294,5 +294,7 @@ printline
 printf "\n${blue} [*] My official email:${yellow} lkpandey950@gmail.com"
 printf "\n${blue} [*] My website:${yellow} https://hax4us.com"
 printf "\n${blue} [*] My YouTube channel:${yellow} https://youtube.com/hax4us"
+printline
+printf "\n${blue} [*] Fixed by:${yellow} Marcio Wesley Borges https://marciowb.dev"
 printline
 printf "${reset}\n"
