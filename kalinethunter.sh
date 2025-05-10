@@ -195,7 +195,7 @@ home="/home/\${user}"
 LOGIN="sudo -u kali /bin/bash"
 if [[ ("\$#" != "0" && ("\$1" == "-r")) ]]; then
 	user=root
-	home="/\${root}"
+	home="/\${user}"
 	LOGIN="/bin/bash --login"
 	shift
 fi
