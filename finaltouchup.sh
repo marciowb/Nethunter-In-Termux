@@ -1,4 +1,11 @@
 #!/data/data/com.termux/files/usr/bin/bash
+set +e
+
+if [ -z $DESTINATION -o -z $SETARCH ]; then
+    echo "DESTINATION and SETARCH environment variables is required." >&2
+    exit 1
+fi
+echo "DESTINATION=$DESTINATION, SETARCH=$SETARCH"
 
 fix_profile() {
     if [ -f ${DESTINATION}/root/.bash_profile ]; then
@@ -10,13 +17,16 @@ fix_sudo() {
     chmod +s $DESTINATION/usr/bin/sudo
     chmod +s $DESTINATION/usr/bin/su
     echo "kali    ALL=(ALL:ALL) ALL" > $DESTINATION/etc/sudoers.d/kali
-    echo "Set disable_coredump false" > $DESTINATION/etc/sudo.conf
+    echo "Set disable_coredump false" >> $DESTINATION/etc/sudo.conf
 }
 
 fix_uid() {
-    GID=$(id -g)
-    startkali -r usermod -u $UID kali 2>/dev/null
-    startkali -r groupmod -g $GID kali 2>/dev/null
+    AUID=$(id -u)
+    AGID=$(id -g)
+    sed "/^kali:/ s/\(.*\):\([0-9]\+\):\([0-9]\+\):\(.*\)$/\1:${AUID}:${AGID}:\4/" -i "${DESTINATION}/etc/passwd"
+    sed "/^kali:/ s/\(.*\):[0-9]\+:\(.*\)$/\1:${AGID}:\2/" -i "${DESTINATION}/etc/group"
+    startkali.sh cat /etc/passwd | tail -n5
+    startkali.sh cat /etc/group | tail -n5
 }
 
 create_xsession_handler() {

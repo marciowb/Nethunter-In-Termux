@@ -3,9 +3,10 @@
 #
 # https://hax4us.com
 ################################################################################
-# Updated By: LJohnson2484
-# Modified Date: 11/21/24
+# Updated By: Marcio Wesley Borges https://marciowb.dev
+# Modified Date: 2025-05-09
 ################################################################################
+set +e
 
 # colors
 red='\033[1;31m'
@@ -15,11 +16,14 @@ reset='\033[0m'
 
 # Clean up
 pre_cleanup() {
-        find $HOME -name "kali*" -type d -exec rm -rf {} \; || :
+	scriptfile="$(which startkali.sh 2>/dev/null)"
+ 	if [[ $scriptfile != "" ]]; then
+		mv ${scriptfile} startkali.sh.old
+	fi
 }
 
 post_cleanup() {
-        find $HOME -name "kali*" -type f -exec rm -rf {} \; || :
+	echo "Try to run Kali using startkali.sh and after all, maybe you would like to update and upgrade your packages."
 } 
 
 # Utility function for Unknown Arch
@@ -60,7 +64,7 @@ checkdeps() {
 	apt update -y &> /dev/null
 	echo "\n [*] Checking for all required tools..."
 
-	for i in proot tar axel; do
+	for i in proot tar axel wget sed; do
 		if [ -e $PREFIX/bin/$i ]; then
 			echo "\n  • ${i} is OK"
 		else
@@ -105,26 +109,26 @@ gettarfile() {
 # Utility function to get SHA
 getsha() {
 	printf "\n${blue} [*] Getting SHA ... $reset\n"
-    if [ -f kali-nethunter-rootfs-${chroot}-${SETARCH}.tar.xz.sha512sum ]; then
-        rm kali-nethunter-rootfs-${chroot}-${SETARCH}.tar.xz.sha512sum
-    fi
-	axel ${EXTRAARGS} 
-             --alternate "${URL}.sha512sum" \\
-             -o $rootfs.sha512sum
+	if [ -f "$rootfs.sha512sum" ]; then
+		rm "$rootfs.sha512sum"
+	fi
+	axel ${EXTRAARGS} --alternate "${URL}.sha512sum" -o $rootfs.sha512sum || echo "Failed to download file signature"
 }
 
 # Utility function to check integrity
 checkintegrity() {
 	printf "\n${blue} [*] Checking integrity of file..."
-	prinf "\n [*] The script will immediately terminate in case of integrity failure"
+	printf "\n [*] The script will immediately terminate in case of integrity failure"
 	printf "${reset}\n"
-	sha512sum -c $rootfs.sha512sum || \\
-        {
-		printf "${red} Sorry :( to say your downloaded linux file was corrupted"
-                printf "\n or half downloaded, but don'''t worry, just rerun my script"
-                printf "${reset}\n"
-		exit 1
-	}
+ 	if [ -f "$rootfs.sha512sum" ]; then
+		sha512sum -c "$rootfs.sha512sum" || \
+	        {
+			printf "${red} Sorry :( to say your downloaded linux file was corrupted"
+	                printf "\n or half downloaded, but don'''t worry, just rerun this script"
+	                printf "${reset}\n"
+			exit 1
+		}
+  	fi
 }
 
 # Utility function to extract tar file
@@ -132,9 +136,17 @@ extract() {
 	printf "\n${blue} [*] Extracting ${rootfs}"
         printf "\n into ${DESTINATION}"
         printf "${reset}\n"
-	proot --link2symlink \\
-              tar -xf $rootfs \\
+	proot --link2symlink \
+              tar -xf $rootfs \
               -C $HOME 2> /dev/null || :
+
+        # fallback to most recent package structure
+	KALI=`basename ${DESTINATION}`
+	if [ -d "${HOME}/${KALI}" ]; then
+ 		CHROOTDIR=`dirname ${DESTINATION}`
+ 		mkdir -p $CHROOTDIR
+		ln -s "${HOME}/${KALI}" "${CHROOTDIR}/${KALI}"
+  	fi
 }
 
 # Utility function for login file
@@ -142,7 +154,7 @@ createloginfile() {
 	bin=$PREFIX/bin/startkali.sh
         printf "\n${blue} [*] Creating ${bin}"
         printf "${reset}\n"
-	cat > $bin <<- EOM
+cat <<EOM > $bin
 #!/data/data/com.termux/files/usr/bin/bash -e
 unset LD_PRELOAD
 
@@ -151,6 +163,8 @@ red='\033[1;31m'
 yellow='\033[1;33m'
 blue='\033[1;34m'
 reset='\033[0m'
+
+KALIDIR="${DESTINATION}"
 
 #####################
 #    SETARCH        #
@@ -174,43 +188,62 @@ checksysinfo() {
 	esac
         printf "\n [*] SETARCH = ${SETARCH}"
 }
-if [ ! -f $DESTINATION/root/.version ]; then
-    touch $DESTINATION/root/.version
+if [ ! -f \${KALIDIR}/root/.version ]; then
+    touch \${KALIDIR}/root/.version
 fi
+
 user=kali
-home=$DESTINATION/home/$user
-LOGIN="sudo -u \$user /bin/bash"
+home="/home/\${user}"
+LOGIN="sudo -u kali /bin/bash"
 if [[ ("\$#" != "0" && ("\$1" == "-r")) ]]; then
-    user=root
-    home=$DESTINATION/$user
-    LOGIN="/bin/bash --login"
-    shift
+	user=root
+	home="/\${user}"
+	LOGIN="/bin/bash --login"
+	shift
 fi
 
-cmd="proot \\
-    --link2symlink \\
-    -0 \\
-    -r ${DESTINATION} \\
-    -b /dev \\
-    -b /proc \\
-    -b ${DESTINATION}/dev:/dev/shm \\
-    -b /sdcard \\
-    -b ${HOME} \\
-    -w ${home} \\
-    ${PREFIX}/bin/env -i \\
-    HOME=${home} TERM=${TERM} \\
-    LANG=${LANG} \\
-    PATH=${DESTINATION}/bin:${home}/bin:${DESTINATION}/sbin:${home}/sbin:${DESTINATION}\etc:${home}/bin \\
-    ${LOGIN}"
+cmd_proot() {
+	if [[ \$# != 0 ]]; then
+		proot \
+		    --link2symlink \
+		    -0 \
+		    -r \${KALIDIR} \
+		    -b /dev \
+		    -b /proc \
+		    -b \${KALIDIR}/dev:/dev/shm \
+		    -b /sdcard \
+		    -b "${HOME}:/opt/host" \
+		    -w \${home} \
+		    /bin/env -i \
+		    HOME=\${home} \
+		    TERM=${TERM} \
+		    LANG=${LANG} \
+		    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:\${home}/bin \
+		    \${LOGIN} -c "\$*"
+	  else
+		proot \
+		    --link2symlink \
+		    -0 \
+		    -r \${KALIDIR} \
+		    -b /dev \
+		    -b /proc \
+		    -b \${KALIDIR}/dev:/dev/shm \
+		    -b /sdcard \
+		    -b "${HOME}:/opt/host" \
+		    -w \${home} \
+		    /bin/env -i \
+		    HOME=\${home} \
+		    TERM=${TERM} \
+		    LANG=${LANG} \
+		    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:\${home}/bin \
+		    \${LOGIN}
+	fi   
+}
+cmd_proot  "\$@"
 
-args="${@}"
-if [ "${#}" == 0 ]; then
-    exec $cmd
-else
-    $cmd -c "${args}"
-fi
 EOM
 	chmod 700 $bin
+ 	ln -s $bin $PREFIX/bin/startkali || true
 }
 
 printline() {
@@ -244,10 +277,17 @@ post_cleanup
 
 printf "\n${blue} [*] Configuring Kali For You ..."
 
+# Update Kali sign key to allow packages upgrade and allow fetches from http
+fix_package_updates() {
+	wget https://archive.kali.org/archive-keyring.gpg -O $DESTINATION/usr/share/keyrings/kali-archive-keyring.gpg
+	sed 's/^deb http:/ deb [trusted=yes] http:/' -i $DESTINATION/etc/apt/sources.list
+}
+fix_package_updates
+
 # Utility function for resolv.conf
 resolvconf() {
 	#create resolv.conf file 
-	printf "\nnameserver 8.8.8.8\nnameserver 8.8.4.4" > $DESTINATION/etc/resolv.conf
+	printf "\nnameserver 8.8.8.8\nnameserver 1.1.1.1" > $DESTINATION/etc/resolv.conf
 } 
 resolvconf
 
@@ -256,9 +296,17 @@ resolvconf
 ################
 
 finalwork() {
+	echo "DESTINATION=$DESTINATION, SETARCH=$SETARCH"
+
 	[ -e $HOME/finaltouchup.sh ] && rm $HOME/finaltouchup.sh
 	echo
-	axel -a https://github.com/Hax4us/Nethunter-In-Termux/raw/master/finaltouchup.sh
+	wget https://raw.githubusercontent.com/marciowb/Nethunter-In-Termux/refs/heads/master/finaltouchup.sh
+ 	
+	if [ ! -f $HOME/finaltouchup.sh ]; then
+		sleep 2
+		wget https://raw.githubusercontent.com/marciowb/Nethunter-In-Termux/refs/heads/master/finaltouchup.sh
+	fi
+   
 	DESTINATION=$DESTINATION SETARCH=$SETARCH bash $HOME/finaltouchup.sh
 } 
 finalwork
@@ -271,5 +319,7 @@ printline
 printf "\n${blue} [*] My official email:${yellow} lkpandey950@gmail.com"
 printf "\n${blue} [*] My website:${yellow} https://hax4us.com"
 printf "\n${blue} [*] My YouTube channel:${yellow} https://youtube.com/hax4us"
+printline
+printf "\n${blue} [*] Fixed by:${yellow} Marcio Wesley Borges https://marciowb.dev"
 printline
 printf "${reset}\n"
