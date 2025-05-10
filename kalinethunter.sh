@@ -3,8 +3,8 @@
 #
 # https://hax4us.com
 ################################################################################
-# Updated By: LJohnson2484
-# Modified Date: 11/21/24
+# Updated By: marciowb
+# Modified Date: 2025-05-09
 ################################################################################
 
 # colors
@@ -19,7 +19,7 @@ pre_cleanup() {
 }
 
 post_cleanup() {
-        echo "Try to run Kali using: startkali.sh"
+        echo "Try to run Kali using startkali.sh and after all, maybe you would like to update and upgrade your packages."
 } 
 
 # Utility function for Unknown Arch
@@ -60,7 +60,7 @@ checkdeps() {
 	apt update -y &> /dev/null
 	echo "\n [*] Checking for all required tools..."
 
-	for i in proot tar axel; do
+	for i in proot tar axel sed; do
 		if [ -e $PREFIX/bin/$i ]; then
 			echo "\n  • ${i} is OK"
 		else
@@ -105,12 +105,10 @@ gettarfile() {
 # Utility function to get SHA
 getsha() {
 	printf "\n${blue} [*] Getting SHA ... $reset\n"
-    if [ -f kali-nethunter-rootfs-${chroot}-${SETARCH}.tar.xz.sha512sum ]; then
-        rm kali-nethunter-rootfs-${chroot}-${SETARCH}.tar.xz.sha512sum
-    fi
-	axel ${EXTRAARGS} \
-             --alternate "${URL}.sha512sum" \
-             -o $rootfs.sha512sum || echo "Failed to download file signature"
+	if [ -f "$rootfs.sha512sum" ]; then
+		rm "$rootfs.sha512sum"
+	fi
+	axel ${EXTRAARGS} --alternate "${URL}.sha512sum" -o $rootfs.sha512sum || echo "Failed to download file signature"
 }
 
 # Utility function to check integrity
@@ -118,11 +116,11 @@ checkintegrity() {
 	printf "\n${blue} [*] Checking integrity of file..."
 	prinf "\n [*] The script will immediately terminate in case of integrity failure"
 	printf "${reset}\n"
- 	if [ -f $rootfs.sha512sum ]; then
-		sha512sum -c $rootfs.sha512sum || \
+ 	if [ -f "$rootfs.sha512sum" ]; then
+		sha512sum -c "$rootfs.sha512sum" || \
 	        {
 			printf "${red} Sorry :( to say your downloaded linux file was corrupted"
-	                printf "\n or half downloaded, but don'''t worry, just rerun my script"
+	                printf "\n or half downloaded, but don'''t worry, just rerun this script"
 	                printf "${reset}\n"
 			exit 1
 		}
@@ -211,7 +209,7 @@ cmd_proot() {
 	    -b /proc \
 	    -b \${KALIDIR}/dev:/dev/shm \
 	    -b /sdcard \
-	    -b "${HOME}:/home/host" \
+	    -b "${HOME}:/opt/host" \
 	    -w \${home} \
 	    /bin/env -i \
 	    HOME=\${home} \
@@ -220,6 +218,7 @@ cmd_proot() {
 	    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:\${home}/bin \
 	    \${LOGIN}"
 }
+cmd_proot
 
 EOM
 	chmod 700 $bin
@@ -255,6 +254,13 @@ createloginfile
 post_cleanup
 
 printf "\n${blue} [*] Configuring Kali For You ..."
+
+# Update Kali sign key to allow packages upgrade and allow fetches from http
+fix_package_updates() {
+	wget https://archive.kali.org/archive-keyring.gpg -O $DESTINATION/usr/share/keyrings/kali-archive-keyring.gpg
+	sed 's/^deb http:/ deb [trusted=yes] http:/' -i $DESTINATION/etc/apt/sources.list
+}
+fix_package_updates
 
 # Utility function for resolv.conf
 resolvconf() {
