@@ -6,6 +6,7 @@
 # Updated By: marciowb
 # Modified Date: 2025-05-09
 ################################################################################
+set +e
 
 # colors
 red='\033[1;31m'
@@ -15,8 +16,8 @@ reset='\033[0m'
 
 # Clean up
 pre_cleanup() {
-	scriptfile=`which startkali.sh`
- 	if [[ $? = 0 ]]; then
+	scriptfile="$(which startkali.sh 2>/dev/null)"
+ 	if [[ $scriptfile != "" ]]; then
         	mv ${scriptfile} startkali.sh.old
 	fi
 }
@@ -117,7 +118,7 @@ getsha() {
 # Utility function to check integrity
 checkintegrity() {
 	printf "\n${blue} [*] Checking integrity of file..."
-	prinf "\n [*] The script will immediately terminate in case of integrity failure"
+	printf "\n [*] The script will immediately terminate in case of integrity failure"
 	printf "${reset}\n"
  	if [ -f "$rootfs.sha512sum" ]; then
 		sha512sum -c "$rootfs.sha512sum" || \
@@ -225,6 +226,7 @@ cmd_proot
 
 EOM
 	chmod 700 $bin
+ 	ln -s $bin $PREFIX/bin/startkali || true
 }
 
 printline() {
