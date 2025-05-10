@@ -15,11 +15,11 @@ reset='\033[0m'
 
 # Clean up
 pre_cleanup() {
-        find $HOME -name "kali*" -type d -exec rm -rf {} \; || :
+        which stsartkali.sh >/dev/null 2>/dev/null && mv `wich startkali.sh` startkali.sh.old
 }
 
 post_cleanup() {
-        find $HOME -name "kali*" -type f -exec rm -rf {} \; || :
+        echo "Try to run Kali using: startkali.sh"
 } 
 
 # Utility function for Unknown Arch
