@@ -6,8 +6,8 @@ This is a script by which you can install Kali nethunter (Kali Linux) in your te
 3. Run script `./kalinethunter.sh`
 
 ### Usage 
-1. Use command `startkali.sh` to start nethunter. Default user is __kali__ and default password is also __kali__.
-2. if you want to start nethunter as a root user then use command `startkali.sh -r`.
+1. Use command `startkali` to start nethunter. Default user is __kali__ and default password is also __kali__.
+2. if you want to start nethunter as a root user then use command `startkali -r`.
 
 ### VNC Guide
 1. To start a vnc session `vnc start`
