@@ -186,8 +186,8 @@ checksysinfo() {
 	esac
         printf "\n [*] SETARCH = ${SETARCH}"
 }
-if [ ! -f ${KALIDIR}/root/.version ]; then
-    touch ${KALIDIR}/root/.version
+if [ ! -f \${KALIDIR}/root/.version ]; then
+    touch \${KALIDIR}/root/.version
 fi
 
 user=kali
