@@ -160,6 +160,8 @@ yellow='\033[1;33m'
 blue='\033[1;34m'
 reset='\033[0m'
 
+KALIDIR="${DESTINATION}"
+
 #####################
 #    SETARCH        #
 #####################
@@ -182,40 +184,43 @@ checksysinfo() {
 	esac
         printf "\n [*] SETARCH = ${SETARCH}"
 }
-if [ ! -f $DESTINATION/root/.version ]; then
-    touch $DESTINATION/root/.version
+if [ ! -f ${KALIDIR}/root/.version ]; then
+    touch ${KALIDIR}/root/.version
 fi
-home=$DESTINATION/home/kali
+
+user=kali
+home="/home/\${user}"
 LOGIN="sudo -u kali /bin/bash"
 if [[ ("\$#" != "0" && ("\$1" == "-r")) ]]; then
-    home=$DESTINATION/root
-    LOGIN="/bin/bash --login"
-    shift
+	user=root
+	home="/\${root}"
+	LOGIN="/bin/bash --login"
+	shift
 fi
 
-cmd="proot \
-    --link2symlink \
-    -0 \
-    -r ${DESTINATION} \
-    -b /dev \
-    -b /proc \
-    -b ${DESTINATION}/dev:/dev/shm \
-    -b /sdcard \
-    -b ${HOME} \
-    -w \${home} \
-    /bin/env -i \
-    HOME=\${home} \
-    TERM=${TERM} \
-    LANG=${LANG} \
-    PATH=${DESTINATION}/bin:\${home}/bin:${DESTINATION}/sbin:\${home}/sbin:${DESTINATION}/etc:\${home}/bin \
-    \${LOGIN}"
-
-args="${@}"
-if [ "${#}" == 0 ]; then
-    exec \$cmd
-else
-    \$cmd -c "\${args}"
+if [[ \$# != 0 ]]; then
+	LOGIN="\${LOGIN} -c \$@
 fi
+
+cmd_proot() {
+	proot \
+	    --link2symlink \
+	    -0 \
+	    -r \${KALIDIR} \
+	    -b /dev \
+	    -b /proc \
+	    -b \${KALIDIR}/dev:/dev/shm \
+	    -b /sdcard \
+	    -b "${HOME}:/home/host" \
+	    -w \${home} \
+	    /bin/env -i \
+	    HOME=\${home} \
+	    TERM=${TERM} \
+	    LANG=${LANG} \
+	    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:\${home}/bin \
+	    \${LOGIN}"
+}
+
 EOM
 	chmod 700 $bin
 }
