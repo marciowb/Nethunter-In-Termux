@@ -142,8 +142,10 @@ extract() {
 
         # fallback to most recent package structure
 	KALI=`basename ${DESTINATION}`
-	if [ -f "${HOME}/${KALI}/etc/environment" ]; then
-		ln -s "${HOME}/${KALI}" "${HOME}/chroot/${KALI}"
+	if [ -d "${HOME}/${KALI}" ]; then
+ 		CHROOTDIR=`dirname ${DESTINATION}`
+ 		mkdir -p $CHROOTDIR
+		mv "${HOME}/${KALI}" "${CHROOTDIR}/"
   	fi
 }
 
