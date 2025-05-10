@@ -202,29 +202,44 @@ if [[ ("\$#" != "0" && ("\$1" == "-r")) ]]; then
 	shift
 fi
 
-if [[ \$# != 0 ]]; then
-	LOGIN="\${LOGIN} -c"
-fi
-
 cmd_proot() {
-	proot \
-	    --link2symlink \
-	    -0 \
-	    -r \${KALIDIR} \
-	    -b /dev \
-	    -b /proc \
-	    -b \${KALIDIR}/dev:/dev/shm \
-	    -b /sdcard \
-	    -b "${HOME}:/opt/host" \
-	    -w \${home} \
-	    /bin/env -i \
-	    HOME=\${home} \
-	    TERM=${TERM} \
-	    LANG=${LANG} \
-	    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:\${home}/bin \
-	    \${LOGIN}  "\$@"
+	if [[ \$# != 0 ]]; then
+		proot \
+		    --link2symlink \
+		    -0 \
+		    -r \${KALIDIR} \
+		    -b /dev \
+		    -b /proc \
+		    -b \${KALIDIR}/dev:/dev/shm \
+		    -b /sdcard \
+		    -b "${HOME}:/opt/host" \
+		    -w \${home} \
+		    /bin/env -i \
+		    HOME=\${home} \
+		    TERM=${TERM} \
+		    LANG=${LANG} \
+		    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:\${home}/bin \
+		    \${LOGIN} -c "\$*"
+	  else
+		proot \
+		    --link2symlink \
+		    -0 \
+		    -r \${KALIDIR} \
+		    -b /dev \
+		    -b /proc \
+		    -b \${KALIDIR}/dev:/dev/shm \
+		    -b /sdcard \
+		    -b "${HOME}:/opt/host" \
+		    -w \${home} \
+		    /bin/env -i \
+		    HOME=\${home} \
+		    TERM=${TERM} \
+		    LANG=${LANG} \
+		    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:\${home}/bin \
+		    \${LOGIN}
+	fi   
 }
-cmd_proot  "\$*"
+cmd_proot  "\$@"
 
 EOM
 	chmod 700 $bin
