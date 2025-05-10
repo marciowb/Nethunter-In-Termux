@@ -203,7 +203,7 @@ if [[ ("\$#" != "0" && ("\$1" == "-r")) ]]; then
 fi
 
 if [[ \$# != 0 ]]; then
-	LOGIN=\${LOGIN} -c \$@
+	LOGIN="\${LOGIN} -c"
 fi
 
 cmd_proot() {
@@ -222,9 +222,9 @@ cmd_proot() {
 	    TERM=${TERM} \
 	    LANG=${LANG} \
 	    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:\${home}/bin \
-	    \${LOGIN}
+	    \${LOGIN}  "\$@"
 }
-cmd_proot
+cmd_proot  "\$*"
 
 EOM
 	chmod 700 $bin
