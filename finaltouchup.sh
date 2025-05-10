@@ -15,8 +15,8 @@ fix_sudo() {
 
 fix_uid() {
     GID=$(id -g)
-    startkali -r usermod -u $UID kali 2>/dev/null
-    startkali -r groupmod -g $GID kali 2>/dev/null
+    startkali.sh -r usermod -u $UID kali 2>/dev/null
+    startkali.sh -r groupmod -g $GID kali 2>/dev/null
 }
 
 create_xsession_handler() {
