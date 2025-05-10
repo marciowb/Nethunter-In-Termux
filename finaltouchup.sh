@@ -1,4 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
+set +e
 
 fix_profile() {
     if [ -f ${DESTINATION}/root/.bash_profile ]; then
