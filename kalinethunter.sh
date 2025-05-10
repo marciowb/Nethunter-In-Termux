@@ -197,7 +197,7 @@ if [[ ("\$#" != "0" && ("\$1" == "-r")) ]]; then
 fi
 
 if [[ \$# != 0 ]]; then
-	LOGIN="\${LOGIN} -c \$@
+	LOGIN=\${LOGIN} -c \$@
 fi
 
 cmd_proot() {
