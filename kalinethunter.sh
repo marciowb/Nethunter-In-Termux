@@ -220,7 +220,7 @@ cmd_proot() {
 	    TERM=${TERM} \
 	    LANG=${LANG} \
 	    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:\${home}/bin \
-	    \${LOGIN}"
+	    \${LOGIN}
 }
 cmd_proot
 
