@@ -15,7 +15,10 @@ reset='\033[0m'
 
 # Clean up
 pre_cleanup() {
-        which stsartkali.sh >/dev/null 2>/dev/null && mv `wich startkali.sh` startkali.sh.old
+	scriptfile=`which startkali.sh`
+ 	if [[ $? = 0 ]]; then
+        	mv ${scriptfile} startkali.sh.old
+	fi
 }
 
 post_cleanup() {
