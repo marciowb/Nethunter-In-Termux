@@ -1,5 +1,5 @@
 # Nethunter-In-Termux
-This is a script by which you can install *Kali NetHunter* (Kali Linux) in your [Termux application](https://github.com/termux/termux-app) **without** rooted phone.
+This script allow you install *Kali NetHunter* (Kali Linux) in your [Termux application](https://github.com/termux/termux-app) **without** rooted phone.
 Yes, you don't need ~root~ to run [Kali Linux](https://www.kali.org/) on your phone.
 
 ### Steps For Installation
